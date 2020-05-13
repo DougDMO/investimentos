@@ -31,6 +31,11 @@ class Sql extends PDO {
 
         $stmt->execute();
 
+        if($stmt->errorInfo()[2] != null) {
+
+            throw new Exception("ERRO: " . $stmt->errorInfo()[2]);
+        };
+
         return $stmt;
 
 

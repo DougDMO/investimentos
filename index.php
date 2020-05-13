@@ -2,61 +2,95 @@
 
 require_once "config.php";
 
-$sql = new Sql();
+$regImportacao = new RegistroImportacao();
+$ultimoregistro = $regImportacao->getUltimaImportacao();
 
-$url = 'http://www.fundamentus.com.br/resultado.php';
+$regPapeis = new Papeis();
+$results = $regPapeis->getPapeis();
+
+?>
 
 
-$conteudoSite = file_get_contents($url);
+</center>
 
-$DOM = new DOMDocument;
-@$DOM->loadHTML($conteudoSite);
-$XPath = new DomXPath($DOM);
 
-$linha = array();
+<!DOCTYPE html>
+<html >
+<head>
+    <meta charset="UTF-8">
+    <title>Seu Home de Investimentos</title>
 
-$headers = array();
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
 
-for ($j = 1; $j <= 21; $j++) {
 
-    $titulo = $XPath->query('//*[@id="resultado"]/thead/tr/th[' . $j . ']/a');
+    <link rel="stylesheet" href="css/style.css">
 
-    foreach ($titulo as $tit) {
 
-        $headers[$j] = "[".$tit->nodeValue."]";
+</head>
 
-    }
-}
+<body>
+<section>
+    <!--for demo wrap-->
+    <br>
+    <h1>Ações</h1>
+    <div class="tbl-header">
+        <table cellpadding="0" cellspacing="0" border="0">
+            <thead>
+            <tr>
+                <?php
+                $url = 'http://www.fundamentus.com.br/resultado.php';
 
-$sqlcol = (implode(",",$headers));
+                $conteudoSite = file_get_contents($url);
 
-$sqlval="";
-$sqlinter="";
+                $DOM = new DOMDocument;
+                @$DOM->loadHTML($conteudoSite);
+                $XPath = new DomXPath($DOM);
 
-for ($i = 1; $i <= 886; $i++) {
+                $linha = array();
 
-    $sqlinter="";
+                $headers = array();
 
-    for ($c = 1; $c <=count($headers); $c++) {
+                for ($j = 1; $j <= 21; $j++) {
 
-        $divs = $XPath->query('//*[@id="resultado"]/tbody/tr[' . $i . ']/td[' . $c . ']');
+                    $titulo = $XPath->query('//*[@id="resultado"]/thead/tr/th[' . $j . ']/a');
 
-        foreach ($divs as $div) {
+                    foreach ($titulo as $tit) {
 
-            $linha[$headers[$c]] = [$div->nodeValue];
+                        $headers[$j] = "[" . $tit->nodeValue . "]";
 
-            $sqlinter = $sqlinter . "'" . $div->nodeValue . "'";
+                        echo "<th>$tit->nodeValue</th>";
 
-        }
-    }
+                    }
+                } ?>
+            </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="tbl-content">
+        <table cellpadding="0" cellspacing="0" border="0">
+            <tbody>
+            <?php
 
-    $sqlinter = str_replace("''","','",$sqlinter);
-    $sqlval = $sqlval . "(".$sqlinter.")";
+            for ($l = 0; $l < count($results); $l++) {
+                echo "<tr>";
+                foreach ($results[$l] as $rel) {
 
-}
-$sqlval = str_replace(")(","),(",$sqlval);
+                    echo "<td><center>$rel</center></td>";
 
-$string = "INSERT INTO papeis ($sqlcol) VALUES $sqlval;";
-//echo $string;
-$sql->query($string);
-echo "Done";
+                }
+                echo "</tr>";
+            } ?>
+            </tbody>
+        </table>
+    </div>
+</section>
+<h2>Última atualização: <?php echo $ultimoregistro?></h2>
+</body>
+
+<h1>Atualize suas ações !!
+    <a href="atualpapeis.php">
+        <img border="0" src="imagens/upload.svg" width="50" height="50">
+
+    </a>
+</h1>
+</html>
